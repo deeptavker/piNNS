@@ -4,7 +4,8 @@ This repository is a part of a project done under the guidance of Prof. Ahmad Sh
 
 ## Neighbour Algorithm
 
-explanation of the algorithm and then explanation of each function within the neighbour subroutine 
+### Explanation of the `NEIGHBOUR_CUDA()` subroutine
 
+- Variables on the host : `particleHash`, `particleId`, `cellStart`, `cellEnd`, `neighb_cuda`, `x`, `y`, `z`, `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, 
 
 
