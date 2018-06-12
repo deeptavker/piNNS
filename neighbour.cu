@@ -18,7 +18,7 @@ double Zmax=9, Zmin=0;
 double re=4, DELTA=0;
 int NUM=10;
 int MAX_NEIGHB=100;
-int **neighb;
+int **neighb, **neighb_cuda;
 int *particleHash, *particleid, *cellStart, *cellEnd;
 
 // ----------------- CUDA KERNELS -------------------------
@@ -286,16 +286,16 @@ void NEIGHBOUR_cuda(){
        
 
   
-  //neighb[10][50] = 5;
-  /*
+  //neighb_cuda[10][50] = 5;
+  
   
   for(int j=0; j<NUM; j++){
     for(int i=0; i<h_neighb[j*(MAX_NEIGHB + 1)]; i++){
-      neighb[j+1][i+2] = 55;//h_neighb[j*(MAX_NEIGHB + 1) + i + 1];
+      neighb_cuda[j+1][i+2] = h_neighb[j*(MAX_NEIGHB + 1) + i + 1];
     }
-    neighb[j+1][1] = 55; //h_neighb[j*(MAX_NEIGHB + 1)];
+    neighb_cuda[j+1][1] = h_neighb[j*(MAX_NEIGHB + 1)];
   }
-  */
+  
   
   // ------------------ Debugging --------------------------
 
