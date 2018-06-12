@@ -105,7 +105,7 @@ __global__ void createNeighbourArraysCUDA(int *d_neighb, int *cellStart, int *ce
         {
           J = particleid[JJ];
           curr_neighb_num++;
-          d_neighb[neighb_index + curr_neighb_num] = J;
+          d_neighb[neighb_index + curr_neighb_num] = J+1; //here the index is shifted by one unit to conform to the original MPS convention
           
         }
       }
@@ -284,7 +284,10 @@ void NEIGHBOUR_cuda(){
   // ---------------------------- Populating neighb array ----------------------
   
        
-
+  neighb_cuda = new int*[NUM+1];
+  for(int i=0; i<NUM+1; i++){
+    neighb_cuda[i] = new int[MAX_NEIGHB + 2];
+  }
   
   //neighb_cuda[10][50] = 5;
   
@@ -485,7 +488,10 @@ int main(){
   NEIGHBOUR_serial();
   cout<<endl<<"original neighbours";
   for(int i=1; i<=NUM; i++){
-  cout<<endl<<neighb[i][1];
+    for(int j=0; j<neighb[i][1]; j++){
+      bool check = neighb[i][j+2] == neighb_cuda[i][j+2];
+      cout<<" "<<check<<endl;
+    }
   }
 
 
