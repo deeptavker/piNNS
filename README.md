@@ -8,9 +8,7 @@ This repository is a part of a project done under the guidance of Prof. Ahmad Sh
 
 The neighbour module can be imported via headers like so - `#include<neighb.cu>`
 
-##### 1.1.1 
-
-The first function available is `neighbour_cuda_1(args)` 
+##### 1.1.1 The first function available is `neighbour_cuda_1(args)` 
 The required arguments are :
 - int* - `x`, `y`, `z`
 - int - `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, `MAX_NEIGHB`
