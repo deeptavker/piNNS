@@ -1,6 +1,6 @@
 # Parallel MPS Implementation
 
-This repository is a part of a project done under the guidance of Prof. Ahmad Shaekeibinia
+This repository is a part of a project done under the guidance of Prof. Ahmad Shakibaeinia.
 
 ## 1. Neighbour Algorithm
 
