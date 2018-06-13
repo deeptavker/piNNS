@@ -36,7 +36,5 @@ The neighbours in this can can be looped over for all particles like so:
 - Find the coordinates of the cell in terms of `i`, `j`, and `k`. Here we use `Cnum = (i-1) + (j-1)*ncx + (k-1)*ncx*ncy`. 
 - Find the neighbouring cell numbers and iterate over the particles in those cells using `cellStart`, `cellEnd`, and `particleId`. `cellstart` and `cellEnd` are already populated according to the key-sorted `particleHash` with `particleId` as the key-array.
 
-----
 #### 1.2 Performance Measures of the code 
-
 
