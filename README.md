@@ -2,12 +2,14 @@
 
 This repository is a part of a project done under the guidance of Prof. Ahmad Shaekeibinia
 
-## Neighbour Algorithm
+## 1. Neighbour Algorithm
+
+#### 1.A How to use the module?
 
 The neighbour module can be imported via headers like so - `#include<neighb.cu>`
 
 -------------
-The first function available is `neighbour_cuda_1(args).` 
+The first function available is `neighbour_cuda_1(args)` 
 The required arguments are :
 - int* - `x`, `y`, `z`
 - int - `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, `MAX_NEIGHB`
@@ -21,7 +23,7 @@ for(int j=0; j<neighb[i][1]; j++){
 }
 ```
 ----
-There is another function available which is called `neighbour_cuda_2(args)`.
+There is another function available which is called `neighbour_cuda_2(args)`
 The required arguments are :
 - int* - `x`, `y`, `z`, `particleHash`, `particleID`, `cellStart`, `cellEnd`
 - int - `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, `MAX_NEIGHB`
@@ -33,5 +35,7 @@ The neighbours in this can can be looped over for all particles like so:
 - Find the coordinates of the cell in terms of `i`, `j`, and `k`. Here we use `Cnum = (i-1) + (j-1)*ncx + (k-1)*ncx*ncy`. 
 - Find the neighbouring cell numbers and iterate over the particles in those cells using `cellStart`, `cellEnd`, and `particleId`. `cellstart` and `cellEnd` are already populated according to the key-sorted `particleHash` with `particleId` as the key-array.
 
+----
+#### 1.B Performance Measures of the code 
 
 
