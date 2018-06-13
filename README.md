@@ -4,7 +4,7 @@ This repository is a part of a project done under the guidance of Prof. Ahmad Sh
 
 ## 1. Neighbour Algorithm
 
-#### 1.A How to use the module?
+#### 1.1 How to use the module?
 
 The neighbour module can be imported via headers like so - `#include<neighb.cu>`
 
@@ -36,6 +36,6 @@ The neighbours in this can can be looped over for all particles like so:
 - Find the neighbouring cell numbers and iterate over the particles in those cells using `cellStart`, `cellEnd`, and `particleId`. `cellstart` and `cellEnd` are already populated according to the key-sorted `particleHash` with `particleId` as the key-array.
 
 ----
-#### 1.B Performance Measures of the code 
+#### 1.2 Performance Measures of the code 
 
 
