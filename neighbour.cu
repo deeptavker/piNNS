@@ -6,20 +6,43 @@
 #include <time.h>
 #include <vector>
 #include <thrust/sort.h>
+#include <chrono>
+#define THREADS_PER_BLOCK 512
 
 using namespace std;
+using namespace std::chrono;
 
-double x[10]={1,1.001,3,4,5,6,7,8,9,0};
-double y[10]={1,1.001,3,4,5,6,7,8,9,0};
-double z[10]={1,1.001,3,4,5,6,7,8,9,0};
+
+
+
+double *x, *y, *z;
 double Xmax=9, Xmin=0;
 double Ymax=9, Ymin=0;
 double Zmax=9, Zmin=0;
-double re=4, DELTA=0;
-int NUM=10;
-int MAX_NEIGHB=100;
+double re=0.072, DELTA=0;
+int NUM=15000;
+int MAX_NEIGHB=1500;
+
+void create_particles(int NUM){
+    x = (double *)malloc(sizeof(double)*NUM);
+    y = (double *)malloc(sizeof(double)*NUM);
+    z = (double *)malloc(sizeof(double)*NUM);
+
+
+    srand((unsigned)time(0)); 
+    double lowest=0, highest=8; 
+    double range=(highest-lowest)+1; 
+    for(int index=0; index<NUM; index++){ 
+        x[index] = lowest+double(range*rand()/(RAND_MAX + 1.0)); 
+        y[index] = lowest+double(range*rand()/(RAND_MAX + 1.0)); 
+        z[index] = lowest+double(range*rand()/(RAND_MAX + 1.0)); 
+    } 
+}
+
 int **neighb, **neighb_cuda;
 int *particleHash, *particleid, *cellStart, *cellEnd;
+
+
 
 // ----------------- CUDA KERNELS -------------------------
 
@@ -28,33 +51,46 @@ __global__ void calcHash(double *d_x, double *d_y, double *d_z, int *d_particleH
   double *d_Ymax, double *d_Zmax, double *d_Zmin, int *d_particleid, int *d_tnc, int *ncx, int *ncy,\
   int *ncz){
 
+  int k = threadIdx.x + blockIdx.x * blockDim.x;
+  if(k < *d_NUM){
+
+
   *ncx = int((*d_Xmax - *d_Xmin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in x direction
   *ncy = int((*d_Ymax - *d_Ymin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in y direction
   *ncz = int((*d_Zmax - *d_Zmin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in z direction
   *d_tnc = *ncx * *ncy * *ncz;
 
-  int k = threadIdx.x + blockIdx.x * blockDim.x;
-  int *icell, *jcell, *kcell;
+  
+  int *icell, *jcell, *kcell, *cellNum;
 
-  int cellarrsize =   sizeof(int);
-  icell = (int *)malloc(cellarrsize);
-  jcell = (int *)malloc(cellarrsize);
-  kcell = (int *)malloc(cellarrsize);
+  int sizeint = sizeof(int);
+  icell = (int *)malloc(sizeint);
+  jcell = (int *)malloc(sizeint);
+  kcell = (int *)malloc(sizeint);
+  cellNum = (int *)malloc(sizeint);
   
   *icell = int((d_x[k] - *d_Xmin) / (*d_re + *d_DELTA)) + 1;
   *jcell = int((d_y[k] - *d_Ymin) / (*d_re + *d_DELTA)) + 1;
   *kcell = int((d_z[k] - *d_Zmin) / (*d_re + *d_DELTA)) + 1;
 
-  int cellNum = *icell + (*jcell - 1)* *ncx + (*kcell - 1)* *ncx * *ncy;
+  *cellNum = *icell + (*jcell - 1)* *ncx + (*kcell - 1)* *ncx * *ncy;
 
-  d_particleHash[k] = cellNum;
+  d_particleHash[k] = *cellNum;
   d_particleid[k] = k;
+
+  
+  free(icell);
+  free(jcell);
+  free(kcell);
+  free(cellNum);
+}
 
 }
 
 __global__ void findCellStart(int *particleHash, int *cellStart, int *cellEnd, int *NUM){
 
   int k = threadIdx.x + blockIdx.x * blockDim.x; // here index value is equal to the cell number which starts with 1 
+  if(k < *NUM){
   if (particleHash[k] != particleHash[k+1] and k!= *NUM - 1){
     cellEnd[particleHash[k] - 1] = k;
     cellStart[particleHash[k+1] - 1] = k+1;
@@ -62,12 +98,16 @@ __global__ void findCellStart(int *particleHash, int *cellStart, int *cellEnd, i
   if(k == *NUM - 1){
     cellEnd[particleHash[k] - 1] = k;
   }
-              
+    }
+
+  free(&k);            
 }
 
-__global__ void createNeighbourArraysCUDA(int *d_neighb, int *cellStart, int *cellEnd, int *particleHash, int *particleid, int *ncx, int *ncy, int *ncz, int *d_max_neighb, int *test){
+__global__ void createNeighbourArraysCUDA(int *d_neighb, int *cellStart, int *cellEnd, int *particleHash, int *particleid, int *ncx, int *ncy, int *ncz, int *d_max_neighb,  int *d_NUM){
 
   int index = threadIdx.x + blockIdx.x * blockDim.x; 
+
+  if(index < *d_NUM){
   int pid, icell, jcell, kcell, cellNum;
 
   cellNum = particleHash[index]; 
@@ -115,13 +155,15 @@ __global__ void createNeighbourArraysCUDA(int *d_neighb, int *cellStart, int *ce
   
   
   d_neighb[neighb_index] = curr_neighb_num;
-  test[index] = d_neighb[neighb_index];
- 
+ }
 }
 
-__global__ void InitializeCellDetails(int *cellStart, int *cellEnd){
+__global__ void InitializeCellDetails(int *cellStart, int *cellEnd, int *d_tnc){
   int index = threadIdx.x + blockIdx.x * blockDim.x; 
+  if(index < *d_tnc){
   cellStart[index] = 0; cellEnd[index] = -1;
+}
+free(&index);
 }
 
 __global__ void Template(int *particleHash, int *particleid, int *cellStart, int *cellEnd, int *ncx, int *ncy, int *ncz, int *size_neighbours, int *test){
@@ -179,14 +221,18 @@ __global__ void Template(int *particleHash, int *particleid, int *cellStart, int
 }
 
 
+
+
 // ------------------------- Host sub-sub-routine for neighbour computation ------------------------ 
 
-void NEIGHBOUR_cuda(){
+void neighbour_cuda_1(){
+
+  cout<<endl<<"Time study for neighbour_cuda_1()"<<endl;
 
   // ------------------ variable declarations and initializations ------------------------------
 
   int *d_cellEnd, *d_cellStart, *d_NUM, *d_tnc, *tnc, *d_ncx, *d_ncy, *d_ncz, *d_max_neighb;
-  int *d_particleHash, *d_particleid, *d_neighb, *h_neighb, *d_test, *test, *d_sizeof_neighbours;
+  int *d_particleHash, *d_particleid, *d_neighb, *h_neighb, *d_sizeof_neighbours;
   double *d_x, *d_y, *d_z, *d_Xmax, *d_Xmin, *d_Ymax, *d_Ymin, *d_Zmax, *d_Zmin, *d_re, *d_DELTA;
 
   int arrsizeint = NUM * sizeof(int);
@@ -196,15 +242,16 @@ void NEIGHBOUR_cuda(){
   int sizeneighb = NUM * (MAX_NEIGHB + 1) * sizeof(int);
   int sizeof_neighbours = (MAX_NEIGHB + 1) * sizeof(int);
 
-  
-  particleHash = (int *)malloc(arrsizeint);
-  particleid = (int *)malloc(arrsizeint);
   tnc = (int *)malloc(sizeint);
   h_neighb = (int *)malloc(sizeneighb);
 
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+
   cudaMalloc((void **)&d_particleHash, arrsizeint);
   cudaMalloc((void **)&d_particleid, arrsizeint); 
-  
   cudaMalloc((void **)&d_x, arrsizedouble);
   cudaMalloc((void **)&d_y, arrsizedouble);
   cudaMalloc((void **)&d_z, arrsizedouble);
@@ -223,12 +270,11 @@ void NEIGHBOUR_cuda(){
   cudaMalloc((void **)&d_ncz, sizeint);
   cudaMalloc((void **)&d_neighb, sizeneighb);
   cudaMalloc((void **)&d_max_neighb, sizeint);
-  cudaMalloc((void **)&d_test, arrsizeint);
   cudaMalloc((void **)&d_sizeof_neighbours, sizeof_neighbours);
 
-  cudaMemcpy(d_x, &x, arrsizedouble, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_y, &y, arrsizedouble, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_z, &z, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_x, x, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_y, y, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_z, z, arrsizedouble, cudaMemcpyHostToDevice);
   cudaMemcpy(d_Xmin, &Xmin, sizedouble, cudaMemcpyHostToDevice);
   cudaMemcpy(d_Xmax, &Xmax, sizedouble, cudaMemcpyHostToDevice);
   cudaMemcpy(d_Ymin, &Ymin, sizedouble, cudaMemcpyHostToDevice);
@@ -240,22 +286,41 @@ void NEIGHBOUR_cuda(){
   cudaMemcpy(d_NUM, &NUM, sizeint, cudaMemcpyHostToDevice);
   cudaMemcpy(d_max_neighb, &MAX_NEIGHB, sizeint, cudaMemcpyHostToDevice);
   cudaMemcpy(d_sizeof_neighbours, &sizeof_neighbours, sizeint, cudaMemcpyHostToDevice);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  float milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
 
-  // --------------- running the calcHash kernel ----------------------------------------
-
-  calcHash<<<5,2>>>(d_x, d_y, d_z, d_particleHash, d_NUM, d_Xmax, d_Xmin, d_re, d_DELTA, d_Ymin, d_Ymax, d_Zmax, d_Zmin, d_particleid, d_tnc, d_ncx, d_ncy, d_ncz);
-
-  // ---------------- sorting the particleHash array -----------------------------
-
-  thrust::device_ptr<int> dev_Hash(d_particleHash);
-  thrust::device_ptr<int> dev_id(d_particleid);
-  thrust::sort_by_key(dev_Hash, dev_Hash + 10, dev_id); //need to generalise this 10
-
-  cudaMemcpy(particleHash, d_particleHash, arrsizeint, cudaMemcpyDeviceToHost);
-  cudaMemcpy(particleid, d_particleid, arrsizeint, cudaMemcpyDeviceToHost);
+  cout<<" initial memory transfers and allocations : "<<milliseconds<<endl;
 
   
 
+  // --------------- running the calcHash kernel ----------------------------------------
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  calcHash<<<NUM/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_x, d_y, d_z, d_particleHash, d_NUM, d_Xmax, d_Xmin, d_re, d_DELTA, d_Ymin, d_Ymax, d_Zmax, d_Zmin, d_particleid, d_tnc, d_ncx, d_ncy, d_ncz);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" calcHash : "<<milliseconds<<endl;
+  // ---------------- sorting the particleHash array -----------------------------
+
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  thrust::device_ptr<int> dev_Hash(d_particleHash);
+  thrust::device_ptr<int> dev_id(d_particleid);
+  thrust::sort_by_key(dev_Hash, dev_Hash + NUM, dev_id); //need to generalise this 10
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" Radix-Sort : "<<milliseconds<<endl;
+  
   // --------------------- finding cell start and cell end for each cell -----------------------------
 
   cudaMemcpy(tnc, d_tnc, sizeint, cudaMemcpyDeviceToHost);
@@ -265,19 +330,36 @@ void NEIGHBOUR_cuda(){
   cudaMalloc((void **)&d_cellStart, cellarrsize); 
   cudaMalloc((void **)&d_cellEnd, cellarrsize); 
 
-  InitializeCellDetails<<<*tnc,1>>>(d_cellStart, d_cellEnd);
-  findCellStart<<<5,2>>>(d_particleHash, d_cellStart, d_cellEnd, d_NUM);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  InitializeCellDetails<<<*tnc/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_cellStart, d_cellEnd, d_tnc);
+  findCellStart<<<NUM/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_particleHash, d_cellStart, d_cellEnd, d_NUM);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cudaMemcpy(cellStart, d_cellStart, cellarrsize, cudaMemcpyDeviceToHost);
-  cudaMemcpy(cellEnd, d_cellEnd, cellarrsize, cudaMemcpyDeviceToHost);
-
+  cout<<" InitializeCellDetails and findCellStart : "<<milliseconds<<endl;
+  
   // -------------------------- Creating neighbour arrays for each particle ------------------------------
 
-  //Template<<<5,2>>>(d_particleHash, d_particleid, d_cellStart, d_cellEnd, d_ncx, d_ncy, d_ncz, d_sizeof_neighbours, d_test);
-  createNeighbourArraysCUDA<<<5,2>>>(d_neighb, d_cellStart, d_cellEnd, d_particleHash, d_particleid, d_ncx, d_ncy, d_ncz, d_max_neighb, d_test);
-  test = (int *)malloc(arrsizeint);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  createNeighbourArraysCUDA<<<NUM/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_neighb, d_cellStart, d_cellEnd, d_particleHash, d_particleid, d_ncx, d_ncy, d_ncz, d_max_neighb, d_NUM);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" createNeighbourArraysCUDA : "<<milliseconds<<endl;
+  
+  
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
   cudaMemcpy(h_neighb, d_neighb, sizeneighb, cudaMemcpyDeviceToHost);
-  cudaMemcpy(test, d_test, arrsizeint, cudaMemcpyDeviceToHost);
 
 
 
@@ -299,36 +381,14 @@ void NEIGHBOUR_cuda(){
     neighb_cuda[j+1][1] = h_neighb[j*(MAX_NEIGHB + 1)];
   }
   
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" neighbour array transfer and construction of 2D neighb : "<<milliseconds<<endl;
   
-  // ------------------ Debugging --------------------------
-
-  cout<<endl<<" ParticleID - cellID "<<endl;
-  for(int i=0; i<NUM; i++){
-    cout<<particleid[i]<<" - "<<particleHash[i]<<endl;
-  }
-
-  cout<<endl<<"Neighbours new"<<endl;
-
-  for(int i=0; i<NUM; i++){
-    cout<<i<<" - "<<test[i]<<endl;
-  }
-
-  cout<<endl<<"Cell start and end new"<<endl;
-
-  for(int i=0; i<*tnc; i++){
-    cout<<i+1<<" - "<<cellStart[i]<<" : "<<cellEnd[i]<<endl;
-  }
-
-  cout<<"Neighbours according to the h_neighb array";
-
-  for(int i=0; i<NUM; i++){
-    int neighb_index = (MAX_NEIGHB + 1)*i;
-    cout<<i<<" : "<<h_neighb[neighb_index]<<endl;
-  }
-
-
-  //after it all works, I am going to delete all unrequired host variables. 
-
+  
   // -------------------------- Deallocating memory ---------------------------
 
   cudaFree(d_particleHash);
@@ -351,16 +411,16 @@ void NEIGHBOUR_cuda(){
   cudaFree(d_ncy);
   cudaFree(d_ncz);
   cudaFree(d_neighb);
+  cudaFree(d_max_neighb);
+  cudaFree(d_sizeof_neighbours);
 
-  free(particleHash);
-  free(particleid);
-  free(cellStart);
-  free(cellEnd);
   free(h_neighb);
   free(tnc);
 }
 
 void NEIGHBOUR_serial(){
+
+  cout<<endl<<"Time study for NEIGHBOUR_serial()"<<endl;
 
   // ------------------PARAMETERS DEFENTION -------------------------------------
   int ncx = int((Xmax - Xmin) / (re + DELTA)) + 1;     // Number of cells in x direction
@@ -398,7 +458,6 @@ void NEIGHBOUR_serial(){
     Iend[k] = 0;
     nc[k] = 0;
   }
-  cout<<"particle - cell - original"<<endl;
   for (k = 1; k <= NUM; k++) //particle loop
   {
     icell[k] = int((x[k-1] - Xmin) / (re + DELTA)) + 1;
@@ -406,7 +465,6 @@ void NEIGHBOUR_serial(){
     kcell[k] = int((z[k-1] - Zmin) / (re + DELTA)) + 1;
 
     Cnum = icell[k] + (jcell[k] - 1)*ncx + (kcell[k] - 1)*ncx*ncy;     // Cell number in which particle k located
-    cout<<k<<" "<<Cnum<<endl;
 
     nc[Cnum]++;                       // Number of particle in cell Cnum
     Iend[Cnum]++;                   // Number of particle in cell Cnum 
@@ -425,11 +483,6 @@ void NEIGHBOUR_serial(){
     ip[Iend[Cnum]] = k;
   }
 
-  cout<<endl<<"cell start and cell end original"<<endl;
-
-  for(int i=1; i<=tnc; i++){
-    cout<<i<<" - "<<Ista[i]<<" : "<<Iend[i]<<endl;
-  }
 
 
   //--------------- FINDIND NEIGHBORS ----------------------------------
@@ -479,21 +532,193 @@ void NEIGHBOUR_serial(){
   Ista = NULL; Iend = NULL; nc = NULL; icell = NULL; jcell = NULL; kcell = NULL, ip = NULL;
 }
 
+void neighbour_cuda_2(){
+
+  cout<<endl<<"Time study for neighbour_cuda_2()"<<endl;
+
+  // ------------------ variable declarations and initializations ------------------------------
+
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+
+  int *d_cellEnd, *d_cellStart, *d_NUM, *d_tnc, *tnc, *d_ncx, *d_ncy, *d_ncz;
+  int *d_particleHash, *d_particleid;
+  double *d_x, *d_y, *d_z, *d_Xmax, *d_Xmin, *d_Ymax, *d_Ymin, *d_Zmax, *d_Zmin, *d_re, *d_DELTA;
+
+  int arrsizeint = NUM * sizeof(int);
+  int sizeint = sizeof(int);
+  int arrsizedouble = NUM * sizeof(double);
+  int sizedouble = sizeof(double);
+  
+  particleHash = (int *)malloc(arrsizeint);
+  particleid = (int *)malloc(arrsizeint);
+  tnc = (int *)malloc(sizeint);
+
+  cudaMalloc((void **)&d_particleHash, arrsizeint);
+  cudaMalloc((void **)&d_particleid, arrsizeint); 
+  
+  cudaMalloc((void **)&d_x, arrsizedouble);
+  cudaMalloc((void **)&d_y, arrsizedouble);
+  cudaMalloc((void **)&d_z, arrsizedouble);
+  cudaMalloc((void **)&d_Xmin, sizedouble);
+  cudaMalloc((void **)&d_Xmax, sizedouble);
+  cudaMalloc((void **)&d_Ymin, sizedouble);
+  cudaMalloc((void **)&d_Ymax, sizedouble);
+  cudaMalloc((void **)&d_Zmin, sizedouble);
+  cudaMalloc((void **)&d_Zmax, sizedouble);
+  cudaMalloc((void **)&d_re, sizedouble);
+  cudaMalloc((void **)&d_DELTA, sizedouble);
+  cudaMalloc((void **)&d_NUM, sizeint);
+  cudaMalloc((void **)&d_tnc, sizeint);
+  cudaMalloc((void **)&d_ncx, sizeint);
+  cudaMalloc((void **)&d_ncy, sizeint);
+  cudaMalloc((void **)&d_ncz, sizeint);
+
+  cudaMemcpy(d_x, x, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_y, y, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_z, z, arrsizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Xmin, &Xmin, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Xmax, &Xmax, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Ymin, &Ymin, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Ymax, &Ymax, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Zmin, &Zmin, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_Zmax, &Zmax, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_re, &re, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_DELTA, &DELTA, sizedouble, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_NUM, &NUM, sizeint, cudaMemcpyHostToDevice);
+
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  float milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" memory initializations and allocations : "<<milliseconds<<endl;
+
+  // --------------- running the calcHash kernel ----------------------------------------
+
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  calcHash<<<NUM/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_x, d_y, d_z, d_particleHash, d_NUM, d_Xmax, d_Xmin, d_re, d_DELTA, d_Ymin, d_Ymax, d_Zmax, d_Zmin, d_particleid, d_tnc, d_ncx, d_ncy, d_ncz);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" calcHash : "<<milliseconds<<endl;
+  // ---------------- sorting the particleHash array -----------------------------
+
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  thrust::device_ptr<int> dev_Hash(d_particleHash);
+  thrust::device_ptr<int> dev_id(d_particleid);
+  thrust::sort_by_key(dev_Hash, dev_Hash + NUM, dev_id); //need to generalise this 10
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" Radix-Sort : "<<milliseconds<<endl;
+  
+  // --------------------- finding cell start and cell end for each cell -----------------------------
+
+  cudaMemcpy(tnc, d_tnc, sizeint, cudaMemcpyDeviceToHost);
+  int cellarrsize = *tnc * sizeof(int);
+  cudaMalloc((void **)&d_cellStart, cellarrsize); 
+  cudaMalloc((void **)&d_cellEnd, cellarrsize); 
+
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+  InitializeCellDetails<<<*tnc/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_cellStart, d_cellEnd, d_tnc);
+  findCellStart<<<NUM/THREADS_PER_BLOCK + 1,THREADS_PER_BLOCK>>>(d_particleHash, d_cellStart, d_cellEnd, d_NUM);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" InitializeCellDetails and findCellStart : "<<milliseconds<<endl;
+
+  // ------------------- Transferring the required arrays into global memory -----
+
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
+
+  cudaMemcpy(particleHash, d_particleHash, arrsizeint, cudaMemcpyDeviceToHost);
+  cudaMemcpy(particleid, d_particleid, arrsizeint, cudaMemcpyDeviceToHost);
+  cudaMemcpy(cellStart, d_cellStart, cellarrsize, cudaMemcpyDeviceToHost);
+  cudaMemcpy(cellEnd, d_cellEnd, cellarrsize, cudaMemcpyDeviceToHost);
+
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
+  cout<<" memory transfers of 4 main arrays : "<<milliseconds<<endl;
+
+  
+  cout<<endl;
+  
+
+  // -------------------------- Deallocating memory ---------------------------
+
+  cudaFree(d_particleHash);
+  cudaFree(d_particleid);
+  cudaFree(d_cellStart);
+  cudaFree(d_cellEnd);
+  cudaFree(d_x);
+  cudaFree(d_y);
+  cudaFree(d_z);
+  cudaFree(d_Xmin);
+  cudaFree(d_Xmax);
+  cudaFree(d_Ymin);
+  cudaFree(d_Ymax);
+  cudaFree(d_Zmin);
+  cudaFree(d_Zmax);
+  cudaFree(d_re);
+  cudaFree(d_NUM);
+  cudaFree(d_tnc);
+  cudaFree(d_ncx);
+  cudaFree(d_ncy);
+  cudaFree(d_ncz);
+
+  free(particleHash);
+  free(particleid);
+  free(cellStart);
+  free(cellEnd);
+  free(tnc);
+}
+
+
+
+
 
 // -------------------- host sub-routine for neighbour calculation --------------------------
 
 int main(){
-
-	NEIGHBOUR_cuda();
+  create_particles(NUM);
+  high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	neighbour_cuda_1();
+  high_resolution_clock::time_point t2 = high_resolution_clock::now();
   NEIGHBOUR_serial();
-  cout<<endl<<"original neighbours";
-  for(int i=1; i<=NUM; i++){
-    for(int j=0; j<neighb[i][1]; j++){
-      bool check = neighb[i][j+2] == neighb_cuda[i][j+2];
-      cout<<" "<<check<<endl;
-    }
+  high_resolution_clock::time_point t3 = high_resolution_clock::now();
+  neighbour_cuda_2();
+  high_resolution_clock::time_point t4 = high_resolution_clock::now();
+  bool test = true;
+  for(int i=0; i<NUM; i++){
+    test = test *  neighb[i+1][1] == neighb_cuda[i+1][1];
   }
 
+  auto duration1 = duration_cast<milliseconds>( t2 - t1 ).count();
+  auto duration2 = duration_cast<milliseconds>( t3 - t2 ).count();
+  auto duration3 = duration_cast<milliseconds>( t4 - t3 ).count();
+  cout << duration1 <<" "<<duration2<<" "<<duration3<<endl;
+
+  cout<<test<<endl;
 
 	return 0;
 } 
