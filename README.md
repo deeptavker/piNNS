@@ -44,7 +44,9 @@ The neighbours in this can can be looped over for all particles like so:
 
 The time study is done using a separate code which generates random particles in a domain and then Cuda NNS and serial NNS is operated on that domain. The resulting `neighb` arrays are compared for *number of neighbours* and *particle ids*. As of now, all the tests are passing. The time study is done using the `chrono` module in C++. The functions used are `neighbour_cuda_1()` and `NEIGHBOUR_serial()`. The time is averaged over three trials. 
 
-Number of threads per block are currently set to **512** using `THREADS_PER_BLOCK` definition. Also, the maximum number of neighbours is restricted to **1500** using `MAX_NEIGHB` variable. Both of these can be changed if required. 
+Number of threads per block are currently set to **512** using `THREADS_PER_BLOCK` definition. Also, the maximum number of neighbours is restricted to **1500** using `MAX_NEIGHB` variable. Both of these can be changed if required.
+
+The first plot depicts the time taken for the neighbour serach and data allocation to the `neighb` variable by both the functions. The second plot depicts the variation of factor by which the CUDA code is faster than the serial code. As can be seen the CUDA code can get more than **200x** speedup with large number of particles (**~50000**) for this particular NNS algorithm. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/time.png)
 
