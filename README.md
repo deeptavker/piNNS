@@ -47,3 +47,5 @@ The time study is done using a separate code which generates random particles in
 Number of threads per block are currently set to **512** using `THREADS_PER_BLOCK` definition. Also, the maximum number of neighbours is restricted to **1500** using `MAX_NEIGHB` variable. Both of these can be changed if required. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/time.png)
+
+![alt text](https://github.com/deeptavker/MPS/blob/master/speedup.png)
