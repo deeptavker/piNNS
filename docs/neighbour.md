@@ -48,6 +48,6 @@ Number of threads per block are currently set to **512** using `THREADS_PER_BLOC
 
 The first plot depicts the time taken for the neighbour serach and data allocation to the `neighb` variable by both the functions. The second plot depicts the variation of factor by which the CUDA code is faster than the serial code. As can be seen the CUDA code can get more than **200x** speedup with large number of particles (**~50000**) for this particular NNS algorithm. 
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/time.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/time.png)
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/speedup.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup.png)
