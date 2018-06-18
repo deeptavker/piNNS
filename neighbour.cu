@@ -227,7 +227,7 @@ __global__ void Template(int *particleHash, int *particleid, int *cellStart, int
 
 void neighbour_cuda_1(){
 
-  cout<<endl<<"Time study for neighbour_cuda_1()"<<endl;
+  //cout<<endl<<"Time study for neighbour_cuda_1()"<<endl;
 
   // ------------------ variable declarations and initializations ------------------------------
 
@@ -291,7 +291,7 @@ void neighbour_cuda_1(){
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" initial memory transfers and allocations : "<<milliseconds<<endl;
+  //cout<<" initial memory transfers and allocations : "<<milliseconds<<endl;
 
   
 
@@ -305,7 +305,7 @@ void neighbour_cuda_1(){
   milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" calcHash : "<<milliseconds<<endl;
+  //cout<<" calcHash : "<<milliseconds<<endl;
   // ---------------- sorting the particleHash array -----------------------------
 
   cudaEventCreate(&start);
@@ -319,7 +319,7 @@ void neighbour_cuda_1(){
   milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" Radix-Sort : "<<milliseconds<<endl;
+  //cout<<" Radix-Sort : "<<milliseconds<<endl;
   
   // --------------------- finding cell start and cell end for each cell -----------------------------
 
@@ -340,7 +340,7 @@ void neighbour_cuda_1(){
   milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" InitializeCellDetails and findCellStart : "<<milliseconds<<endl;
+  //cout<<" InitializeCellDetails and findCellStart : "<<milliseconds<<endl;
   
   // -------------------------- Creating neighbour arrays for each particle ------------------------------
 
@@ -353,7 +353,7 @@ void neighbour_cuda_1(){
   milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" createNeighbourArraysCUDA : "<<milliseconds<<endl;
+ //cout<<" createNeighbourArraysCUDA : "<<milliseconds<<endl;
   
   
   cudaEventCreate(&start);
@@ -386,7 +386,7 @@ void neighbour_cuda_1(){
   milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
 
-  cout<<" neighbour array transfer and construction of 2D neighb : "<<milliseconds<<endl;
+  //cout<<" neighbour array transfer and construction of 2D neighb : "<<milliseconds<<endl;
   
   
   // -------------------------- Deallocating memory ---------------------------
@@ -420,7 +420,7 @@ void neighbour_cuda_1(){
 
 void NEIGHBOUR_serial(){
 
-  cout<<endl<<"Time study for NEIGHBOUR_serial()"<<endl;
+ // cout<<endl<<"Time study for NEIGHBOUR_serial()"<<endl;
 
   // ------------------PARAMETERS DEFENTION -------------------------------------
   int ncx = int((Xmax - Xmin) / (re + DELTA)) + 1;     // Number of cells in x direction
@@ -534,7 +534,7 @@ void NEIGHBOUR_serial(){
 
 void neighbour_cuda_2(){
 
-  cout<<endl<<"Time study for neighbour_cuda_2()"<<endl;
+ // cout<<endl<<"Time study for neighbour_cuda_2()"<<endl;
 
   // ------------------ variable declarations and initializations ------------------------------
 
@@ -700,25 +700,35 @@ void neighbour_cuda_2(){
 // -------------------- host sub-routine for neighbour calculation --------------------------
 
 int main(){
-  create_particles(NUM);
-  high_resolution_clock::time_point t1 = high_resolution_clock::now();
-	neighbour_cuda_1();
-  high_resolution_clock::time_point t2 = high_resolution_clock::now();
-  NEIGHBOUR_serial();
-  high_resolution_clock::time_point t3 = high_resolution_clock::now();
-  neighbour_cuda_2();
-  high_resolution_clock::time_point t4 = high_resolution_clock::now();
-  bool test = true;
-  for(int i=0; i<NUM; i++){
-    test = test *  neighb[i+1][1] == neighb_cuda[i+1][1];
-  }
+  for(int k=1; k<10; k++){
+    NUM = k*10000;
+    MAX_NEIGHB = 1500;
+    create_particles(k*NUM);
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+  	neighbour_cuda_1();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    NEIGHBOUR_serial();
+    high_resolution_clock::time_point t3 = high_resolution_clock::now();
+    //neighbour_cuda_2();
+    //high_resolution_clock::time_point t4 = high_resolution_clock::now();
+    bool test_num = true, test_id = true;
+    for(int i=0; i<NUM; i++){
+      for(int j=0; j<neighb[i+1][1]; j++){
+        test_id = test_id * (neighb[i+1][j+2] == neighb_cuda[i+1][j+2]);
+      }
+      test_num = test_num *  (neighb[i+1][1] == neighb_cuda[i+1][1]);
+    }
 
-  auto duration1 = duration_cast<milliseconds>( t2 - t1 ).count();
-  auto duration2 = duration_cast<milliseconds>( t3 - t2 ).count();
-  auto duration3 = duration_cast<milliseconds>( t4 - t3 ).count();
-  cout << duration1 <<" "<<duration2<<" "<<duration3<<endl;
+    if(test_num == true and test_id == true){
+    cout<<"All tests passing"<<endl;
+    }
 
-  cout<<test<<endl;
+    auto duration1 = duration_cast<milliseconds>( t2 - t1 ).count();
+    auto duration2 = duration_cast<milliseconds>( t3 - t2 ).count();
+    //auto duration3 = duration_cast<milliseconds>( t4 - t3 ).count();
+    cout << "Time taken in milliseconds for # of particles = " <<NUM<<endl;
+    cout<< "CUDA NNS : "<<duration1<<endl<<"Serial NNS : "<<duration2<<endl;
+    }
 
 	return 0;
 } 
