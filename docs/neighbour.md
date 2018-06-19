@@ -7,8 +7,7 @@ The neighbour module is intended for use as a base module for implementations of
 
 #### 2 How to use the module?
 
-The serial neighbour module can be imported via headers like so - `#include<neighb.h>` 
-The parallel neighbour module can be imported via headers like so - `#include<neighb.cu>`
+There are three functions available for use. `NEIGHBOR()` which is serial and `neighbour_cuda_1()` and `neighbour_cuda_2()` which are both GPU-parallelised. For parallel usage, the function can be copy-pasted into required code files, replacing the original `NEIGHBOR()` function with `neighbour_cuda_1()`. 
 
 ##### 2.1 The first function available is `neighbour_cuda_1(args)` 
 The required arguments are :
