@@ -3,7 +3,7 @@
 ## Neighbour Algorithm
 
 #### 1 Introduction 
-The neighbour module is intended for use as a base class for implementations of sub-routines in the MPS code. The current serial implementation of the neighbour algorithm which is similar to the cell-linked-list approach involves a uniform cell grid onto which the particlesw are allocated and then the neighbour search is carried out by searching only the particles in the neighbouring cells (9 in case of 2D and 27 in case of 3D). The parallel implementation follows a paper written by Simon Green based on Particle Simulation in CUDA. The algorithm is written completely in C++ CUDA and uses the CUDA Thrust library for acceleration. There are two different neighbour search functions available depending upon the global memory consumption and memory transfer capabilities of the connector bus. 
+The neighbour module is intended for use as a base module for implementations of sub-routines in the MPS code. The current serial implementation of the neighbour algorithm which is similar to the cell-linked-list approach involves a uniform cell grid onto which the particles are allocated after which the neighbour search is carried out by searching only the particles in the neighbouring cells (9 in case of 2D and 27 in case of 3D). The parallel implementation follows a paper written by Simon Green based on Particle Simulation in CUDA. The algorithm is implemented in C++ CUDA and uses the CUDA Thrust library for the *RadixSort* operation. There are two different parallel neighbour search functions available depending upon the global memory consumption and memory transfer capabilities of the connector bus. A serial imeplementation is also available. 
 
 #### 2 How to use the module?
 
