@@ -38,6 +38,8 @@ The neighbours in this can can be looped over for all particles like so:
 
 #### 3 Performance Measures of the code 
 
+All the tests are run on a **64-bit Linux** system with **GeForce GT 730** NVIDIA GPU and **16GB RAM** on an **intel core i7-7700 @ 3.60GHz x 8** processor. 
+
 ##### 3.1 *A time study for NNS using CUDA and Serial Code*
 
 The time study is done using a separate code which generates random particles in a domain and then Cuda NNS and serial NNS is operated on that domain. The resulting `neighb` arrays are compared for *number of neighbours* and *particle ids*. As of now, all the tests are passing. The time study is done using the `chrono` module in C++. The functions used are `neighbour_cuda_1()` and `NEIGHBOUR_serial()`. The time is averaged over three trials. 
