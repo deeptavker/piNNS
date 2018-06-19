@@ -51,3 +51,5 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/time.png)
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup.png)
+
+For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. 
