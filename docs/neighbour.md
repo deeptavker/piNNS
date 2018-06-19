@@ -38,7 +38,7 @@ The neighbours in this can can be looped over for all particles like so:
 
 #### 3 Performance Measures of the code 
 
-*A time study for NNS using CUDA and Serial Code*
+##### 3.1 *A time study for NNS using CUDA and Serial Code*
 
 The time study is done using a separate code which generates random particles in a domain and then Cuda NNS and serial NNS is operated on that domain. The resulting `neighb` arrays are compared for *number of neighbours* and *particle ids*. As of now, all the tests are passing. The time study is done using the `chrono` module in C++. The functions used are `neighbour_cuda_1()` and `NEIGHBOUR_serial()`. The time is averaged over three trials. 
 
@@ -50,8 +50,10 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup.png)
 
-For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. 
+##### 3.2 For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. 
 
-Following is the time study of CUDA neighbour function based on number of threads per block. 
+##### 3.3 Following is the time study of CUDA neighbour function based on number of threads per block. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
+
+
