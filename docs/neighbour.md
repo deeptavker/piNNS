@@ -52,8 +52,9 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 
 ##### 3.2 For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. 
 
-##### 3.3 Following is the time study of CUDA neighbour function based on number of threads per block. 
+##### 3.3 Variation of time with respect to `THREADS_PER_BLOCK`. The plots are for different number of particles. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
 
+##### 3.4 Variation of time with respect to `MAX_NEIGHB`. The plots are for different number of particles. 
 
