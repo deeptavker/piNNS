@@ -1,18 +1,16 @@
-# Parallel MPS Implementation
 
-This repository is a part of a project done under the guidance of Prof. Ahmad Shakibaeinia.
 
-## 1. Neighbour Algorithm
+## Neighbour Algorithm
 
-#### 1.1 Introduction 
+#### 1 Introduction 
 The neighbour module is intended for use as a base class for implementations of sub-routines in the MPS code. The current serial implementation of the neighbour algorithm which is similar to the cell-linked-list approach involves a uniform cell grid onto which the particlesw are allocated and then the neighbour search is carried out by searching only the particles in the neighbouring cells (9 in case of 2D and 27 in case of 3D). The parallel implementation follows a paper written by Simon Green based on Particle Simulation in CUDA. The algorithm is written completely in C++ CUDA and uses the CUDA Thrust library for acceleration. There are two different neighbour search functions available depending upon the global memory consumption and memory transfer capabilities of the connector bus. 
 
-#### 1.2 How to use the module?
+#### 2 How to use the module?
 
 The serial neighbour module can be imported via headers like so - `#include<neighb.h>` 
 The parallel neighbour module can be imported via headers like so - `#include<neighb.cu>`
 
-##### 1.2.1 The first function available is `neighbour_cuda_1(args)` 
+##### 2.1 The first function available is `neighbour_cuda_1(args)` 
 The required arguments are :
 - int* - `x`, `y`, `z`
 - int - `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, `MAX_NEIGHB`
@@ -26,7 +24,7 @@ for(int j=0; j<neighb[i][1]; j++){
 }
 ```
 
-##### 1.2.2 There is another function available which is called `neighbour_cuda_2(args)`
+##### 2.2 There is another function available which is called `neighbour_cuda_2(args)`
 The required arguments are :
 - int* - `x`, `y`, `z`, `particleHash`, `particleID`, `cellStart`, `cellEnd`
 - int - `Xmax`, `Xmin`, `Ymax`, `Ymin`, `Zmax`, `Zmin`, `re`, `DELTA`, `NUM`, `MAX_NEIGHB`
@@ -38,7 +36,7 @@ The neighbours in this can can be looped over for all particles like so:
 - Find the coordinates of the cell in terms of `i`, `j`, and `k`. Here we use `Cnum = (i-1) + (j-1)*ncx + (k-1)*ncx*ncy`. 
 - Find the neighbouring cell numbers and iterate over the particles in those cells using `cellStart`, `cellEnd`, and `particleId`. `cellstart` and `cellEnd` are already populated according to the key-sorted `particleHash` with `particleId` as the key-array.
 
-#### 1.3 Performance Measures of the code 
+#### 3 Performance Measures of the code 
 
 **A time study for NNS using CUDA and Serial Code**
 
