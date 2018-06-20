@@ -57,7 +57,7 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
 
-##### 3.4 Variation of time with respect to `MAX_NEIGHB`. These tests show that in case of GPU, memory considerations become critical to speedup. Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. 
+##### 3.4 Variation of time with respect to `MAX_NEIGHB`. These tests show that in case of GPU, memory considerations become critical to speedup. Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. As can be seen, memory transfers are handled quite easily by the CPU but for the GPU code, they slow down the code by a certain amount. This demonstrates the *throughput optimisation* in GPUs as compared to *Latency Optimisation* in CPUs. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/parallel_max_neighb.png)
 
