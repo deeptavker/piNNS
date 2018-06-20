@@ -39,7 +39,7 @@ The neighbours in this can can be looped over for all particles like so:
 
 All the tests are run on a **64-bit Linux** system with **GeForce GT 730** NVIDIA GPU and **16GB RAM** on an **intel core i7-7700 @ 3.60GHz x 8** processor. 
 
-##### 3.1 *A time study for NNS using CUDA and Serial Code*
+##### 3.1 A  basic time study for NNS using CUDA and Serial Code
 
 The time study is done using a separate code which generates random particles in a domain and then Cuda NNS and serial NNS is operated on that domain. The resulting `neighb` arrays are compared for *number of neighbours* and *particle ids*. As of now, all the tests are passing. The time study is done using the `chrono` module in C++. The functions used are `neighbour_cuda_1()` and `NEIGHBOUR_serial()`. The time is averaged over three trials. 
 
@@ -51,13 +51,21 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup.png)
 
-##### 3.2 For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. For this test, the values of `MAX_NEIGHB` and `THREADS_PER_BLOCK` were set to *1500* and *512* respectively. The number of particles was equal to *264815*.  
+##### 3.2 Case study 
 
-##### 3.3 Variation of time with respect to `THREADS_PER_BLOCK`. The plots are for different number of particles. Throughout the tests, `MAX_NEIGHB` is set to *1500*. 
+For a case of 3D landslide, the overall speedup is over **1.45x** which is not much less than the theoretical speedup of **1.66x** if the neighbour search is considered to consume **40%** of the computation time and the GPU essentially blazes through the search. For this test, the values of `MAX_NEIGHB` and `THREADS_PER_BLOCK` were set to *1500* and *512* respectively. The number of particles was equal to *264815*.  
+
+##### 3.3 Variation of time with respect to `THREADS_PER_BLOCK`
+
+The plots are for different number of particles. Throughout the tests, `MAX_NEIGHB` is set to *1500*. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
 
-##### 3.4 Variation of time with respect to `MAX_NEIGHB`. These tests show that in case of GPU, memory considerations become critical to speedup. Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. As can be seen, memory transfers are handled quite easily by the CPU but for the GPU code, they slow down the code by a certain amount. This demonstrates the *throughput optimisation* in GPUs as compared to *Latency Optimisation* in CPUs. 
+##### 3.4 Variation of time with respect to `MAX_NEIGHB`
+
+The value of this parameter directly dictates the size of the `neighb` array. These tests show that in case of GPU, memory considerations become critical to speedup because of the memory transfers from device to host of the `neighb` array. 
+
+Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. As can be seen, increasing memory transfers (for the `neighb` array) are handled quite easily by the CPU but for the GPU code, memory transfers slow down the code by a certain amount. This demonstrates the *throughput optimisation* in GPUs as compared to *Latency Optimisation* in CPUs. 
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/parallel_max_neighb.png)
 
