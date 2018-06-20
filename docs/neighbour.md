@@ -57,5 +57,13 @@ The first plot depicts the time taken for the neighbour serach and data allocati
 
 ![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
 
-##### 3.4 Variation of time with respect to `MAX_NEIGHB`. The plots are for different number of particles. Throughout the tests, `THREADS_PER_BLOCK` is set to *512*. 
+##### 3.4 Variation of time with respect to `MAX_NEIGHB`. These tests show that in case of GPU, memory considerations become critical to speedup. Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. 
+
+![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/parallel_max_neighb.png)
+
+![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/serialnns_max_neighb.png)
+
+![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup_max_neighb.png)
+
+
 
