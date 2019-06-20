@@ -2,7 +2,7 @@
 
 This repository is a part of a project done under the guidance of Prof. Ahmad Shakibaenia. The project is done under the umbrella of MITACS Globalink Research Program. *This is not an official work report but a personal record for reference.*  
 
-The objective here is to understand how parallelisation works and try to parallelise a part of a code which is used to simulate fluid flows using the MPS method. 
+The objective here is to understand how parallelisation works and try to parallelise a part of a code which is used to simulate fluid flows using the MPS method and integrate it with the original code in a modular way. 
 
 ## Neighbour Algorithm
 
