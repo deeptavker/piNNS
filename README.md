@@ -1,7 +1,5 @@
 # Parallel Neighbour Search Implementation
 
-The project is done under the umbrella of MITACS Globalink Research Program. 
-
 The objective here is to understand how parallelisation works and try to parallelise a part of a code which is used to simulate fluid flows using the MPS method and integrate it with the original code in a modular way. 
 
 ## Neighbour Algorithm
