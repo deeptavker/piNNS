@@ -51,9 +51,9 @@ Number of threads per block are currently set to **512** using `THREADS_PER_BLOC
 
 The first plot depicts the time taken for the neighbour serach and data allocation to the `neighb` variable by both the functions. The second plot depicts the variation of factor by which the CUDA code is faster than the serial code. As can be seen the CUDA code can get more than **200x** speedup with large number of particles (**~50000**) for this particular NNS algorithm. 
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/time.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/time.png)
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/speedup.png)
 
 ##### 3.2 Case study 
 
@@ -63,7 +63,7 @@ For a case of 3D landslide, the overall speedup is over **1.45x** which is not m
 
 The plots are for different number of particles. Throughout the tests, `MAX_NEIGHB` is set to *1500*. 
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/threads.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/threads.png)
 
 ##### 3.4 Variation of time with respect to `MAX_NEIGHB`
 
@@ -71,11 +71,11 @@ The value of this parameter directly dictates the size of the `neighb` array. Th
 
 Following are plots which depict curves in which `MAX_NEIGHB` is varied while keeping number of particles constant. Time taken for NNS is recorded for Parallel and Serial neighbour search functions. Speedup is also compared. As can be seen, increasing memory transfers (for the `neighb` array) are handled quite easily by the CPU but for the GPU code, memory transfers slow down the code by a certain amount. This demonstrates the *throughput optimisation* in GPUs as compared to *Latency Optimisation* in CPUs. 
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/parallel_max_neighb.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/parallel_max_neighb.png)
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/serialnns_max_neighb.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/serialnns_max_neighb.png)
 
-![alt text](https://github.com/deeptavker/MPS/blob/master/analysis/pics/speedup_max_neighb.png)
+![alt text](https://github.com/deeptavker/MPS/blob/master/test/pics/speedup_max_neighb.png)
 
 
 
