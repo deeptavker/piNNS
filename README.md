@@ -1,6 +1,7 @@
 # Parallel Neighbour Search Implementation
 
-The objective here is to understand how parallelisation works and try to parallelise a part of a code which is used to simulate fluid flows using the MPS method and integrate it with the original code in a modular way. 
+CUDA implementation of cell-linked nearest neighbour search algorithm. 200x speedup for over 50,000 particles. 
+Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/Parallel-Neighbour-Search(2018).
 
 ## Neighbour Algorithm
 
