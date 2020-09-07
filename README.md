@@ -1,6 +1,6 @@
 # Parallel Neighbour Search Implementation
 
-CUDA implementation of cell-linked nearest neighbour search algorithm. 200x speedup for over 50,000 particles. 
+CUDA implementation of cell-linked nearest neighbour search algorithm. 200x speedup for over 100,000 particles. 
 Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/Parallel-Neighbour-Search(2018).
 
 ## Neighbour Algorithm
