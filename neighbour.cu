@@ -1,6 +1,8 @@
 /*
 
 Copyright (C) 2018-2020 Deep Tavker (tavkerdeep@gmail.com)
+Copyright (C) 2018-2020 Ahmad Shakibaenia
+Copyright (C) 2018-2020 Mojtaba Jandaghian
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
