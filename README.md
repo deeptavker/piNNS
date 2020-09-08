@@ -1,6 +1,6 @@
 CUDA implementation of cell-linked-list nearest neighbour search algorithm. 
 
-Compile `neighbour.cu` and use it in whatever way needed. User can create a header file and include it in other programs. 
+Code : `neigbour.cu`
 
 Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/Parallel-Neighbour-Search (2018).
 
