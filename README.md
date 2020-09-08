@@ -1,4 +1,4 @@
-CUDA implementation of cell-linked-list nearest neighbour search algorithm. 
+CUDA implementation of cell-linked-list nearest neighbour search algorithm on a uniform grid. 
 
 Code : `neigbour.cu`
 
