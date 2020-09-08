@@ -66,13 +66,11 @@ __global__ void calcHash(double *d_x, double *d_y, double *d_z, int *d_particleH
   int k = threadIdx.x + blockIdx.x * blockDim.x;
   if(k < *d_NUM){
 
-
   *ncx = int((*d_Xmax - *d_Xmin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in x direction
   *ncy = int((*d_Ymax - *d_Ymin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in y direction
   *ncz = int((*d_Zmax - *d_Zmin) / (*d_re + *d_DELTA)) + 1;     // Number of cells in z direction
   *d_tnc = *ncx * *ncy * *ncz;
 
-  
   int *icell, *jcell, *kcell, *cellNum;
 
   int sizeint = sizeof(int);
@@ -89,7 +87,6 @@ __global__ void calcHash(double *d_x, double *d_y, double *d_z, int *d_particleH
 
   d_particleHash[k] = *cellNum;
   d_particleid[k] = k;
-
   
   free(icell);
   free(jcell);
@@ -163,7 +160,6 @@ __global__ void createNeighbourArraysCUDA(int *d_neighb, int *cellStart, int *ce
       }
     }
   }
-  
   
   d_neighb[neighb_index] = curr_neighb_num;
  }
@@ -356,8 +352,6 @@ void neighbour_cuda_1(){
 
 void NEIGHBOUR_serial(){
 
- // cout<<endl<<"Time study for NEIGHBOUR_serial()"<<endl;
-
   // ------------------PARAMETERS DEFENTION -------------------------------------
   int ncx = int((Xmax - Xmin) / (re + DELTA)) + 1;     // Number of cells in x direction
   int ncy = int((Ymax - Ymin) / (re + DELTA)) + 1;     // Number of cells in y direction
@@ -448,10 +442,8 @@ void NEIGHBOUR_serial(){
     }
     kmax = k - 2;
     neighb[I][1] = kmax; //this is the total number of neighbours, which is stored at the beginning 
-    //if( neighb[I][1]>1098 ||neighb[I][1]*0!=0) printf("ERROR, the neighbors of particles %d is %d", I, neighb[I][1]);
   }
   //--------------------Clearing dynamic arrays ----------------------------
-
   delete[]Ista;
   delete[]Iend;
   delete[]nc;
@@ -465,9 +457,6 @@ void NEIGHBOUR_serial(){
 void neighbour_cuda_2(){
 
   // ------------------ variable declarations and initializations ------------------------------
-
- 
-
   int *d_cellEnd, *d_cellStart, *d_NUM, *d_tnc, *tnc, *d_ncx, *d_ncy, *d_ncz;
   int *d_particleHash, *d_particleid;
   double *d_x, *d_y, *d_z, *d_Xmax, *d_Xmin, *d_Ymax, *d_Ymin, *d_Zmax, *d_Zmin, *d_re, *d_DELTA;
