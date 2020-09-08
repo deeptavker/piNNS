@@ -1,6 +1,5 @@
-# Parallel Neighbour Search Implementation
-
-CUDA implementation of **cell-linked-list nearest neighbour search algorithm**. 
+CUDA implementation of cell-linked-list nearest neighbour search algorithm. 
+Compile `neighbour.cu` and use it in whatever way needed. User can create a header file and include it in other programs. 
 
 Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/Parallel-Neighbour-Search (2018).
 
@@ -10,8 +9,6 @@ Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.c
 The neighbour module is intended for use as a base module for implementations of sub-routines in the MPS code. The current serial implementation of the neighbour algorithm which is similar to the cell-linked-list approach involves a uniform cell grid onto which the particles are allocated after which the neighbour search is carried out by searching only the particles in the neighbouring cells (9 in case of 2D and 27 in case of 3D). The parallel implementation follows a [paper written by Simon Green](http://developer.download.nvidia.com/assets/cuda/files/particles.pdf) based on Particle Simulation in CUDA. The parallel algorithm is implemented in C++ CUDA and uses the [CUDA Thrust library](https://thrust.github.io) for the *RadixSort* operation. There are two different parallel neighbour search functions available depending upon the global memory consumption and memory transfer capabilities of the connector bus. A serial imeplementation is also available. 
 
 #### 2 How to use the module?
-
-Compile `neighbour.cu` and use it in whatever way needed. User can create a header file and include it in other programs. 
 
 There are three functions available for use. `NEIGHBOR()` which is serial and `neighbour_cuda_1()` and `neighbour_cuda_2()` which are both GPU-parallelised. 
 
