@@ -2,7 +2,7 @@ CUDA implementation of cell-linked-list nearest neighbour search algorithm on a 
 
 Code : `neigbour.cu`
 
-Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/cuNNS (2018).
+Cite as : D. Tavker,  Parallel Neighbour Search Implementation, https://github.com/deeptavker/piNNS (2018).
 
 ## Neighbour Algorithm
 
