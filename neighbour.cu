@@ -14,6 +14,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Contributors
+2020 André Luiz Vieira-e-Silva (albvs@cin.ufpe.br)
+2018-2020 Ahmad Shakibaeinia
+2018-2020 Mojtaba Jandaghian
 */
 
 
